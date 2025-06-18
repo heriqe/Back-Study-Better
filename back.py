@@ -1,15 +1,14 @@
 from flask import Flask, request, jsonify
 import mysql.connector
+# pip install flask mysql-connector-python werkzeug
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
-
-# Configure sua conexão MySQL
 db_config = {
     'host': 'localhost',
     'user': 'seu_usuario',
     'password': 'sua_senha',
-    'database': 'seu_banco'
+    'database': 'db_Study_Better'
 }
 
 def get_db_connection():
