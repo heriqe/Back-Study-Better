@@ -1,43 +1,56 @@
-import os
-from flask import Flask, jsonify, request
-from werkzeug.security import check_password_hash
+from flask import Flask, request, jsonify
 import mysql.connector
-from mysql.connector import Error
+from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 
-def get_db_connection():
-    return mysql.connector.connect(
-        host=os.getenv("DB_HOST", "127.0.0.1"),
-        user=os.getenv("DB_USER", "usuario"),
-        password=os.getenv("DB_PASSWORD", "sua_senha_real"),
-        database=os.getenv("DB_NAME", "db_Study_Better")
-    )
+# Configure sua conexão MySQL
+db_config = {
+    'host': 'localhost',
+    'user': 'seu_usuario',
+    'password': 'sua_senha',
+    'database': 'seu_banco'
+}
 
-@app.route('/')
-def home():
-    return jsonify({"mensagem": "API Back End funcionando!"})
+def get_db_connection():
+    return mysql.connector.connect(**db_config)
+
+@app.route('/register', methods=['POST'])
+def register():
+    data = request.get_json()
+    username = data.get('username')
+    password = data.get('password')
+    if not username or not password:
+        return jsonify({'error': 'Missing username or password'}), 400
+    hashed_password = generate_password_hash(password)
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute('INSERT INTO users (username, password) VALUES (%s, %s)', (username, hashed_password))
+        conn.commit()
+        cursor.close()
+        conn.close()
+        return jsonify({'message': 'User registered successfully'}), 201
+    except mysql.connector.IntegrityError:
+        return jsonify({'error': 'Username already exists'}), 409
 
 @app.route('/login', methods=['POST'])
 def login():
-    dados = request.json
-    usuario = dados.get('usuario')
-    senha = dados.get('senha')
-
-    if not usuario or not senha:
-        return jsonify({"mensagem": "Usuário e senha são obrigatórios."}), 400
-
-    try:
-        db = get_db_connection()
-        with db.cursor(dictionary=True) as cursor:
-            cursor.execute("SELECT senha_hash FROM usuarios WHERE usuario = %s", (usuario,))
-            resultado = cursor.fetchone()
-        db.close()
-    except Error as e:
-        return jsonify({"mensagem": "Erro no banco de dados.", "erro": str(e)}), 500
-
-    if resultado and check_password_hash(resultado['senha_hash'], senha):
-        return jsonify({"mensagem": "Login realizado com sucesso!"}), 200
+    data = request.get_json()
+    username = data.get('username')
+    password = data.get('password')
+    if not username or not password:
+        return jsonify({'error': 'Missing username or password'}), 400
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT password FROM users WHERE username = %s', (username,))
+    row = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    if row and check_password_hash(row[0], password):
+        return jsonify({'message': 'Login successful'}), 200
     else:
-        return jsonify({"mensagem": "Usuário ou senha inválidos."}), 401
+        return jsonify({'error': 'Invalid credentials'}), 401
 
+if __name__ == '__main__':
+    app.run(debug=True)
