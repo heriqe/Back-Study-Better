@@ -6,8 +6,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 app = Flask(__name__)
 db_config = {
     'host': 'localhost',
-    'user': 'seu_usuario',
-    'password': 'sua_senha',
+    'user': 'HenriqueFe',
+    'password': 'H3nr1qu3',
     'database': 'db_Study_Better'
 }
 
@@ -55,7 +55,7 @@ def login():
 def get_quizzes():
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
-    cursor.execute('SELECT id, title, description FROM quizzes')
+    cursor.execute('SELECT id_quiz, quiz_titulo, descricao FROM quizzes')
     quizzes = cursor.fetchall()
     cursor.close()
     conn.close()
@@ -70,7 +70,7 @@ def create_quiz():
         return jsonify({'error': 'Missing title'}), 400
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('INSERT INTO quizzes (title, description) VALUES (%s, %s)', (title, description))
+    cursor.execute('INSERT INTO quizzes (quiz_titulo, descricao) VALUES (%s, %s)', (title, description))
     conn.commit()
     cursor.close()
     conn.close()
@@ -80,7 +80,7 @@ def create_quiz():
 def get_questions(quiz_id):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
-    cursor.execute('SELECT id, question_text FROM questions WHERE quiz_id = %s', (quiz_id,))
+    cursor.execute('SELECT id_questao, questao_texto FROM questoes WHERE id_quiz = %s', (quiz_id,))
     questions = cursor.fetchall()
     cursor.close()
     conn.close()
@@ -92,11 +92,11 @@ def answer_question(question_id):
     user_answer = data.get('answer')
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
-    cursor.execute('SELECT correct_answer FROM questions WHERE id = %s', (question_id,))
+    cursor.execute('SELECT resposta_correta FROM questoes WHERE id_questao = %s', (question_id,))
     question = cursor.fetchone()
     cursor.close()
     conn.close()
-    if question and user_answer == question['correct_answer']:
+    if question and user_answer == question['resposta_correta']:
         return jsonify({'correct': True}), 200
     else:
         return jsonify({'correct': False}), 200
@@ -105,7 +105,7 @@ def answer_question(question_id):
 def get_contents():
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
-    cursor.execute('SELECT id, title, summary FROM contents')
+    cursor.execute('SELECT id_conteudo, conteudo_titulo, resumo FROM conteudos')
     contents = cursor.fetchall()
     cursor.close()
     conn.close()
@@ -121,7 +121,7 @@ def create_schedule():
         return jsonify({'error': 'Missing fields'}), 400
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('INSERT INTO schedules (user_id, date, activity) VALUES (%s, %s, %s)', (user_id, date, activity))
+    cursor.execute('INSERT INTO horarios (id_user, data_hora, atividade) VALUES (%s, %s, %s)', (user_id, date, activity))
     conn.commit()
     cursor.close()
     conn.close()
@@ -131,7 +131,7 @@ def create_schedule():
 def get_schedule(user_id):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
-    cursor.execute('SELECT date, activity FROM schedules WHERE user_id = %s', (user_id,))
+    cursor.execute('SELECT data_hora, atividade FROM horarios WHERE id_user = %s', (user_id,))
     schedule = cursor.fetchall()
     cursor.close()
     conn.close()
