@@ -1,4 +1,4 @@
-const db = require('../db'); // Importa a conexão com o banco de dados
+const db = require('../db/index');// Importa a conexão com o banco de dados
 
 exports.listarQuizzes = async (req, res) => {
     try {

@@ -1,6 +1,6 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
-const db = require('../db'); // Importa a conexão com o banco de dados
+const db = require('../db/index'); // Importa a conexão com o banco de dados
 const router = express.Router();
 
 exports.registrar = async (req, res) => {

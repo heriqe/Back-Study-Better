@@ -1,4 +1,4 @@
-const db = require('../db');// Importa a conexão com o banco de dados
+const db = require('../db/index');// Importa a conexão com o banco de dados
 
 exports.criarHorario = async (req, res) => {
     const { id_usuario, data, atividade } = req.body;
