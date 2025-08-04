@@ -1,10 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const questionController = require('../controllers/questionController');
+const questionsController = require('../controllers/questionsController');
 
-router.get('/quizzes/:quizId/questions', questionController.listQuestions);
-router.post('/quizzes/:quizId/questions', questionController.createQuestion);
-router.get('/questions/:questionId', questionController.getQuestion);
-router.delete('/questions/:questionId', questionController.deleteQuestion);
+// Use o nome correto da função exportada:
+router.get('/:quizId', questionsController.listarQuestoes);
+router.post('/:questionId/validate', questionsController.validarResposta);
 
 module.exports = router;

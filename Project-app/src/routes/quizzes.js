@@ -1,11 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const quizController = require('../controllers/quizController');
+const quizzesController = require('../controllers/quizzesController');
 
 // Route to list all quizzes
-router.get('/', quizController.listQuizzes);
+router.get('/', quizzesController.listarQuizzes);
 
 // Route to create a new quiz
-router.post('/', quizController.createQuiz);
+router.post('/', quizzesController.criarQuiz);
 
 module.exports = router;
