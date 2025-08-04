@@ -37,3 +37,36 @@ exports.login = async (req, res) => {
         return res.status(500).json({ erro: 'Erro ao processar a solicitação' });
     }
 };
+
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setError('');
+  if (mode === 'register') {
+    if (form.password !== form.confirmPassword) return setError('Senhas não coincidem.');
+    try {
+      const res = await fetch('/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ usuario: form.username, senha: form.password })
+      });
+      const data = await res.json();
+      if (!res.ok) return setError(data.erro || 'Erro ao registrar');
+      onLoginSuccess({ username: form.username });
+    } catch {
+      setError('Erro de conexão');
+    }
+  } else {
+    try {
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ usuario: form.email, senha: form.password })
+      });
+      const data = await res.json();
+      if (!res.ok) return setError(data.erro || 'Erro ao entrar');
+      onLoginSuccess({ username: form.email });
+    } catch {
+      setError('Erro de conexão');
+    }
+  }
+};
