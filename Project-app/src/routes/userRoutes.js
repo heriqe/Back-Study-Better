@@ -1,20 +1,20 @@
-const express = require("express");
-const middlewareAutenticacao = require("../middleware/middlewareAutenticacao");
+const express = require('express');
 const router = express.Router();
+const middlewareAutenticacao = require('../middleware/middlewareAutenticacao');
 
-router.get("/perfil", middlewareAutenticacao, (req, res) => {
+router.get('/perfil', middlewareAutenticacao, (req, res) => {
   res.json({
     sucesso: true,
-    mensagem: "Usuário autenticado com sucesso",
+    mensagem: 'Usuário autenticado',
     dados: req.usuario
   });
 });
 
-router.get("/dashboard", middlewareAutenticacao, (req, res) => {
+router.get('/dashboard', middlewareAutenticacao, (req, res) => {
   res.json({
     sucesso: true,
-    mensagem: "Bem-vindo ao dashboard",
-    dados: { nome: req.usuario.nome, email: req.usuario.email }
+    mensagem: 'Bem-vindo ao dashboard',
+    dados: { usuario: req.usuario.nome, email: req.usuario.email }
   });
 });
 

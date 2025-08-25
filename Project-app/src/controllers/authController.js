@@ -10,16 +10,15 @@ exports.registrar = async (req, res) => {
   }
 
   try {
-    const [rows] = await db.query("SELECT * FROM usuarios WHERE email = ?", [email]);
+    const [rows] = await db.query("SELECT id FROM usuarios WHERE email = ?", [email]);
     if (rows.length > 0) return res.status(409).json({ erro: "Email já cadastrado" });
 
     const senha_hash = await bcrypt.hash(senha, 10);
 
-    await db.query("INSERT INTO usuarios (nome, email, senha) VALUES (?, ?, ?)", [
-      nome,
-      email,
-      senha_hash,
-    ]);
+    await db.query(
+      "INSERT INTO usuarios (nome, email, senha) VALUES (?, ?, ?)",
+      [nome, email, senha_hash]
+    );
 
     return res.status(201).json({ mensagem: "Usuário registrado com sucesso" });
   } catch (err) {
