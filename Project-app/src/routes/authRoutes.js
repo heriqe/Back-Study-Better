@@ -1,8 +1,9 @@
 const express = require('express');
-const router = express.Router();
 const authController = require('../controllers/authController');
+const router = express.Router();
 
-router.post('/registrar', authController.registrar);
+// Rotas públicas
 router.post('/login', authController.login);
+router.post('/register', authController.registrar);
 
 module.exports = router;

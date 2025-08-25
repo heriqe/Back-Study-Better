@@ -1,72 +1,59 @@
-const express = require('express');
-const bcrypt = require('bcrypt');
-const db = require('../db/index'); // Importa a conexão com o banco de dados
-const router = express.Router();
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const db = require("../db/index");
 
 exports.registrar = async (req, res) => {
-    const { usuario, senha } = req.body;
-    if (!usuario || !senha) {
-        return res.status(400).json({ erro: 'Usuário ou senha ausente' });
-    }
+  const { nome, email, senha } = req.body;
+
+  if (!nome || !email || !senha) {
+    return res.status(400).json({ erro: "Campos ausentes" });
+  }
+
+  try {
+    const [rows] = await db.query("SELECT * FROM usuarios WHERE email = ?", [email]);
+    if (rows.length > 0) return res.status(409).json({ erro: "Email já cadastrado" });
+
     const senha_hash = await bcrypt.hash(senha, 10);
-    try {
-        const conexao = await db.getConnection();
-        const [linhas] = await conexao.query('INSERT INTO users (username, password) VALUES (?, ?)', [usuario, senha_hash]);
-        conexao.release();
-        return res.status(201).json({ mensagem: 'Usuário registrado com sucesso' });
-    } catch (erro) {
-        return res.status(409).json({ erro: 'Usuário já existe' });
-    }
+
+    await db.query("INSERT INTO usuarios (nome, email, senha) VALUES (?, ?, ?)", [
+      nome,
+      email,
+      senha_hash,
+    ]);
+
+    return res.status(201).json({ mensagem: "Usuário registrado com sucesso" });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ erro: "Erro interno no servidor" });
+  }
 };
 
 exports.login = async (req, res) => {
-    const { usuario, senha } = req.body;
-    if (!usuario || !senha) {
-        return res.status(400).json({ erro: 'Usuário ou senha ausente' });
-    }
-    try {
-        const conexao = await db.getConnection();
-        const [linhas] = await conexao.query('SELECT password FROM users WHERE username = ?', [usuario]);
-        conexao.release();
-        if (linhas.length > 0 && await bcrypt.compare(senha, linhas[0].password)) {
-            return res.status(200).json({ mensagem: 'Login bem-sucedido' });
-        } else {
-            return res.status(401).json({ erro: 'Credenciais inválidas' });
-        }
-    } catch (erro) {
-        return res.status(500).json({ erro: 'Erro ao processar a solicitação' });
-    }
-};
+  const { email, senha } = req.body;
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  setError('');
-  if (mode === 'register') {
-    if (form.password !== form.confirmPassword) return setError('Senhas não coincidem.');
-    try {
-      const res = await fetch('/api/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ usuario: form.username, senha: form.password })
-      });
-      const data = await res.json();
-      if (!res.ok) return setError(data.erro || 'Erro ao registrar');
-      onLoginSuccess({ username: form.username });
-    } catch {
-      setError('Erro de conexão');
-    }
-  } else {
-    try {
-      const res = await fetch('/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ usuario: form.email, senha: form.password })
-      });
-      const data = await res.json();
-      if (!res.ok) return setError(data.erro || 'Erro ao entrar');
-      onLoginSuccess({ username: form.email });
-    } catch {
-      setError('Erro de conexão');
-    }
+  if (!email || !senha) return res.status(400).json({ erro: "Campos ausentes" });
+
+  try {
+    const [rows] = await db.query("SELECT * FROM usuarios WHERE email = ?", [email]);
+    if (rows.length === 0) return res.status(401).json({ erro: "Credenciais inválidas" });
+
+    const usuario = rows[0];
+
+    const senhaValida = await bcrypt.compare(senha, usuario.senha);
+    if (!senhaValida) return res.status(401).json({ erro: "Credenciais inválidas" });
+
+    const token = jwt.sign(
+      { id: usuario.id, nome: usuario.nome, email: usuario.email },
+      process.env.JWT_SECRET || "segredo123",
+      { expiresIn: "1h" }
+    );
+
+    return res.status(200).json({
+      token,
+      user: { nome: usuario.nome, email: usuario.email },
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ erro: "Erro interno no servidor" });
   }
 };

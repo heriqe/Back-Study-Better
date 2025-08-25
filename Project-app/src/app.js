@@ -1,22 +1,17 @@
-const express = require('express');
-const bodyParser = require('body-parser');
-const authRoutes = require('./routes/auth');
-const quizRoutes = require('./routes/quizzes');
-const questionRoutes = require('./routes/questions');
-const contentRoutes = require('./routes/contents');
-const scheduleRoutes = require('./routes/schedules');
+const express = require("express");
+const cors = require("cors");
+const authRoutes = require("./routes/authRoutes");
+const userRoutes = require("./routes/userRoutes");
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = 3000;
 
-app.use(bodyParser.json());
+app.use(cors());
+app.use(express.json());
 
-app.use('/auth', authRoutes);
-app.use('/quizzes', quizRoutes);
-app.use('/questions', questionRoutes);
-app.use('/contents', contentRoutes);
-app.use('/schedules', scheduleRoutes);
+app.use("/auth", authRoutes);
+app.use("/users", userRoutes);
 
-app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
-});
+app.get("/", (req, res) => res.send("Servidor rodando"));
+
+app.listen(PORT, () => console.log(`Servidor rodando em http://localhost:${PORT}`));
