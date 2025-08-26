@@ -7,7 +7,6 @@ const userRoutes = require('./routes/userRoutes');
 const materiaisRoutes = require("./routes/materiasRoutes");
 
 const app = express();
-
 app.use(cors());
 app.use(express.json());
 

@@ -1,8 +1,12 @@
 // src/routes/materiaisRoutes.js
 const express = require("express");
-const { getMaterias } = require("../controllers/materiaisController");
+const { materiaisController } = require("../controllers/materiasController");
 const router = express.Router();
 
-router.get("/", getMaterias); // GET http://localhost:3000/materiais
+// rota para todas as matérias
+router.get('/', materiaisController.getMaterias)
+
+// rota para uma matéria específica
+router.get('/:id', materiaisController.getMateriaById)
 
 module.exports = router;
