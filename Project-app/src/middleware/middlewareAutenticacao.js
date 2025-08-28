@@ -1,28 +1,49 @@
-const jwt = require('jsonwebtoken');
-const { promisify } = require('util');
+const jwt = require("jsonwebtoken");
+require("dotenv").config();
 
-const verificarToken = promisify(jwt.verify);
+const JWT_SECRET = process.env.JWT_SECRET || "defaultSecret";
 
-module.exports = async (req, res, next) => {
+module.exports = (req, res, next) => {
   try {
-    const authHeader = req.headers['authorization'];
+    const authHeader = req.headers["authorization"];
     if (!authHeader) {
-      return res.status(401).json({ sucesso: false, mensagem: 'Token ausente' });
-    }
-
-    const [bearer, token] = authHeader.split(' ');
-    if (bearer !== 'Bearer' || !token) {
       return res.status(401).json({
-        sucesso: false,
-        mensagem: 'Formato inválido. Use: Bearer <token>'
+        success: false,
+        message: "Token ausente. Envie no formato: Bearer <token>",
       });
     }
 
-    const decodificado = await verificarToken(token, process.env.JWT_SECRET);
-    req.usuario = decodificado;
-    next();
-  } catch (erro) {
-    console.error('Erro no middlewareAutenticacao:', erro.message);
-    return res.status(401).json({ sucesso: false, mensagem: 'Token inválido ou expirado' });
+    const [bearer, token] = authHeader.split(" ");
+
+    if (!/^Bearer$/i.test(bearer) || !token) {
+      return res.status(401).json({
+        success: false,
+        message: "Formato inválido. Use: Bearer <token>",
+      });
+    }
+
+    jwt.verify(token, JWT_SECRET, (err, decoded) => {
+      if (err) {
+        if (err.name === "TokenExpiredError") {
+          return res.status(401).json({
+            success: false,
+            message: "Token expirado. Faça login novamente.",
+          });
+        }
+        return res.status(401).json({
+          success: false,
+          message: "Token inválido.",
+        });
+      }
+
+      req.usuario = decoded; // agora o usuário está disponível nas rotas
+      next();
+    });
+  } catch (error) {
+    console.error("Erro no middleware de autenticação:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Erro interno no servidor.",
+    });
   }
 };
