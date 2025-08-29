@@ -4,7 +4,7 @@ const db = require("../db/index");
 require('dotenv').config();
 
 // Configs centralizadas
-const JWT_SECRET = process.env.JWT_SECRET || "defaultSecret";
+const JWT_SECRET = process.env.JWT_SECRET || "default";
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "1h";
 const SALT_ROUNDS = 12;
 

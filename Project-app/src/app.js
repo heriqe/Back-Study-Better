@@ -5,6 +5,7 @@ require('dotenv').config();
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const materiaisRoutes = require("./routes/materiasRoutes");
+const planosRoutes = require("./routes/planoRoutes"); 
 const PORT = process.env.PORT;
 
 const app = express();
@@ -14,7 +15,7 @@ app.use(express.json());
 app.use('/auth', authRoutes);
 app.use('/users', userRoutes);
 app.use("/materiais", materiaisRoutes);
-
+app.use("/planos", planosRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
