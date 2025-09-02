@@ -1,6 +1,6 @@
 const express = require("express");
-const planosController = require("../controllers/planosController");
-const auth = require("../middleware/middlewareAutenticacao"); // importa o middleware
+const planosController = require("../controllers/planoController");
+const auth = require("../middlewares/middlewareAutenticacao"); // importa o middleware
 
 const router = express.Router();
 
