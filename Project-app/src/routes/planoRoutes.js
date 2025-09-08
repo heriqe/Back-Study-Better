@@ -1,14 +1,13 @@
 const express = require("express");
-const planosController = require("../controllers/planoController");
-const auth = require("../middlewares/middlewareAutenticacao"); // importa o middleware
-
 const router = express.Router();
+const planoController = require("../controllers/planoController");
+const {validatePlano,} = require("../validador/planoValidator");
+const validationHandler = require("../validador/validationHandler");
 
-// Apenas usuários logados podem acessar
-router.get("/", auth, planosController.getPlanos);
-router.get("/:id", auth, planosController.getPlanoById);
-router.post("/", auth, planosController.createPlano);
-router.put("/:id", auth, planosController.updatePlano);
-router.delete("/:id", auth, planosController.deletePlano);
+router.get("/", planoController.getAll);
+router.get("/:id", planoController.getById);
+router.post("/", validatePlano, validationHandler, planoController.create);
+router.put("/:id", validatePlano, validationHandler, planoController.update);
+router.delete("/:id", planoController.remove);
 
 module.exports = router;

@@ -1,77 +1,100 @@
 const pool = require("../db/index");
+const { sendSuccess, sendError } = require("../utils/response");
 
-const planosController = {
-  // Listar todos
-  getPlanos: async (req, res) => {
+const planoController = {
+  // GET /api/planos
+  getAll: async (req, res) => {
     try {
       const [rows] = await pool.query("SELECT * FROM planos");
-      res.json(rows);
-    } catch (error) {
-      res.status(500).json({ error: "Erro ao buscar planos" });
+      return sendSuccess(res, rows);
+    } catch (err) {
+      return sendError(res, "Erro ao buscar planos", 500);
     }
   },
 
-  // Buscar por ID
-  getPlanoById: async (req, res) => {
-    try {
-      const [rows] = await pool.query("SELECT * FROM planos WHERE id = ?", [
-        req.params.id,
-      ]);
-      if (rows.length === 0) {
-        return res.status(404).json({ message: "Plano não encontrado" });
-      }
-      res.json(rows[0]);
-    } catch (error) {
-      res.status(500).json({ error: "Erro ao buscar plano" });
-    }
-  },
-
-  // Criar
-  createPlano: async (req, res) => {
-    try {
-      const { title, description, highlight, link } = req.body;
-      const [result] = await pool.query(
-        "INSERT INTO planos (title, description, highlight, link) VALUES (?, ?, ?, ?)",
-        [title, description, highlight || false, link]
-      );
-      res.status(201).json({ id: result.insertId, title, description, highlight, link });
-    } catch (error) {
-      res.status(500).json({ error: "Erro ao criar plano" });
-    }
-  },
-
-  // Atualizar
-  updatePlano: async (req, res) => {
+  // GET /api/planos/:id
+  getById: async (req, res) => {
     try {
       const { id } = req.params;
-      const { title, description, highlight, link } = req.body;
-      const [result] = await pool.query(
-        "UPDATE planos SET title=?, description=?, highlight=?, link=? WHERE id=?",
-        [title, description, highlight, link, id]
+      const [rows] = await pool.query(
+        "SELECT * FROM planos WHERE id = ?",
+        [id]
       );
-      if (result.affectedRows === 0) {
-        return res.status(404).json({ message: "Plano não encontrado" });
-      }
-      res.json({ message: "Plano atualizado com sucesso" });
-    } catch (error) {
-      res.status(500).json({ error: "Erro ao atualizar plano" });
+
+      if (rows.length === 0)
+        return sendError(res, "Plano não encontrado", 404);
+
+      return sendSuccess(res, rows[0]);
+    } catch (err) {
+      return sendError(res, "Erro ao buscar plano", 500);
     }
   },
 
-  // Deletar
-  deletePlano: async (req, res) => {
+  // POST /api/planos
+  create: async (req, res) => {
     try {
-      const [result] = await pool.query("DELETE FROM planos WHERE id = ?", [
-        req.params.id,
-      ]);
-      if (result.affectedRows === 0) {
-        return res.status(404).json({ message: "Plano não encontrado" });
-      }
-      res.json({ message: "Plano removido com sucesso" });
-    } catch (error) {
-      res.status(500).json({ error: "Erro ao deletar plano" });
+      const { title, description, duration, highlight, link } = req.body;
+      const [result] = await pool.query(
+        `INSERT INTO planos 
+         (title, description, duration, highlight, link) 
+         VALUES (?, ?, ?, ?, ?)`,
+        [title, description, duration, highlight || 0, link]
+      );
+
+      const novoPlano = {
+        id: result.insertId,
+        title,
+        description,
+        duration,
+        highlight: !!highlight,
+        link,
+      };
+
+      return sendSuccess(res, novoPlano, 201);
+    } catch (err) {
+      return sendError(res, "Erro ao criar plano", 500);
+    }
+  },
+
+  // PUT /api/planos/:id
+  update: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { title, description, duration, highlight, link } = req.body;
+
+      const [result] = await pool.query(
+        `UPDATE planos 
+         SET title = ?, description = ?, duration = ?, highlight = ?, link = ? 
+         WHERE id = ?`,
+        [title, description, duration, highlight, link, id]
+      );
+
+      if (result.affectedRows === 0)
+        return sendError(res, "Plano não encontrado", 404);
+
+      return sendSuccess(res, { message: "Plano atualizado com sucesso" });
+    } catch (err) {
+      return sendError(res, "Erro ao atualizar plano", 500);
+    }
+  },
+
+  // DELETE /api/planos/:id
+  remove: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const [result] = await pool.query(
+        "DELETE FROM planos WHERE id = ?",
+        [id]
+      );
+
+      if (result.affectedRows === 0)
+        return sendError(res, "Plano não encontrado", 404);
+
+      return sendSuccess(res, { message: "Plano removido com sucesso" });
+    } catch (err) {
+      return sendError(res, "Erro ao deletar plano", 500);
     }
   },
 };
 
-module.exports = planosController;
+module.exports = planoController;

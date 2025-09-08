@@ -1,11 +1,22 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const quizzesController = require('../controllers/quizzesController');
+const simuladoController = require("../controllers/simuladoController");
+const { validateSimulado } = require("../validador/simuladoValidator");
+const validationHandler = require("../validador/validationHandler");
 
-// Route to list all quizzes
-router.get('/', quizzesController.listarQuizzes);
+// Listar todos
+router.get("/", simuladoController.getAll);
 
-// Route to create a new quiz
-router.post('/', quizzesController.criarQuiz);
+// Buscar por ID
+router.get("/:id", simuladoController.getById);
+
+// Criar com validação
+router.post("/", validateSimulado, validationHandler,simuladoController.create);
+
+// Atualizar com validação
+router.put("/:id",  validateSimulado, validationHandler,simuladoController.update);
+
+// Deletar
+router.delete("/:id", simuladoController.remove);
 
 module.exports = router;
