@@ -1,5 +1,4 @@
 node_modules
 .env
-banco de dados
 init.sql
 docker-compose.yml
