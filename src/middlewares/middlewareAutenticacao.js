@@ -3,22 +3,29 @@ const response = require("../utils/response");
 
 module.exports = (req, res, next) => {
   try {
-    const authHeader = req.headers["authorization"];
-    if (!authHeader) {
-      return response(res, 401, false, "Token ausente. Use: Bearer <token>");
+    const authHeader = req.headers.authorization;
+    let token = null;
+
+    if (authHeader) {
+      const parts = authHeader.split(" ");
+      if (parts.length !== 2 || !/^Bearer$/i.test(parts[0])) {
+        return response(res, 401, false, "Formato inválido. Use: Bearer <token>");
+      }
+      token = parts[1];
     }
 
-    const [bearer, token] = authHeader.split(" ");
+    // opcional: suportar token em cookie (descomente se usar cookies)
+    // token = token || req.cookies?.token;
 
-    if (!/^Bearer$/i.test(bearer) || !token) {
-      return response(res, 401, false, "Formato inválido. Use: Bearer <token>");
+    if (!token) {
+      return response(res, 401, false, "Token ausente. Use: Bearer <token>");
     }
 
     const decoded = verifyToken(token);
     req.usuario = decoded;
-    next();
+    return next();
   } catch (err) {
-    if (err.name === "TokenExpiredError") {
+    if (err && err.name === "TokenExpiredError") {
       return response(res, 401, false, "Token expirado. Faça login novamente.");
     }
     return response(res, 401, false, "Token inválido.");
