@@ -1,27 +1,41 @@
 const { body } = require("express-validator");
 
-exports.registerValidation = [
-  body("nome")
-    .trim()
-    .notEmpty().withMessage("O nome é obrigatório.")
-    .isLength({ min: 3 }).withMessage("O nome deve ter pelo menos 3 caracteres."),
-  
+// re-usable validator factories (retornam novas instâncias)
+const emailValidator = () =>
   body("email")
     .trim()
-    .notEmpty().withMessage("O e-mail é obrigatório.")
-    .isEmail().withMessage("E-mail inválido."),
-  
+    .exists().withMessage("O e-mail é obrigatório.")
+    .bail()
+    .isEmail().withMessage("Formato de e-mail inválido.")
+    .normalizeEmail();
+
+const passwordValidator = () =>
   body("senha")
-    .notEmpty().withMessage("A senha é obrigatória.")
-    .isLength({ min: 6 }).withMessage("A senha deve ter pelo menos 6 caracteres."),
+    .exists().withMessage("A senha é obrigatória.")
+    .bail()
+    .isLength({ min: 6 }).withMessage("A senha deve ter pelo menos 6 caracteres.");
+
+exports.registerValidation = [
+  body("nome")
+    .exists().withMessage("O nome é obrigatório.")
+    .bail()
+    .isString().withMessage("Nome inválido.")
+    .trim()
+    .isLength({ min: 3 }).withMessage("O nome deve ter pelo menos 3 caracteres."),
+  emailValidator(),
+  passwordValidator(),
+  body("confirmaSenha")
+    .exists().withMessage("A confirmação de senha é obrigatória.")
+    .bail()
+    .custom((value, { req }) => {
+      if (value !== req.body.senha) {
+        throw new Error("As senhas não coincidem.");
+      }
+      return true;
+    }),
 ];
 
 exports.loginValidation = [
-  body("email")
-    .trim()
-    .notEmpty().withMessage("O e-mail é obrigatório.")
-    .isEmail().withMessage("E-mail inválido."),
-  
-  body("senha")
-    .notEmpty().withMessage("A senha é obrigatória."),
+  emailValidator(),
+  passwordValidator(),
 ];

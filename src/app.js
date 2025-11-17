@@ -1,46 +1,56 @@
 // src/app.js
 require("dotenv").config();
+
 const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
 
-// rotas e middlewares
+// Rotas
+const publicRoutes = require("./routes/publicRoutes");
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
 const materiaisRoutes = require("./routes/materiasRoutes");
 const planosRoutes = require("./routes/planoRoutes");
-const errorHandler = require("./middlewares/errorHandler");
-const publicRoutes = require("./routes/publicRoutes");
 
-// CRITICAL FIX: criar a instância do Express antes de usar app.use
+// Middlewares
+const errorHandler = require("./middlewares/errorHandler");
+
+// Inicializa app
 const app = express();
 
-// configuração CORS: usa FRONTEND_ORIGIN se definido, senão permite localhost do Vite
-app.use(
-  cors({
-    origin: process.env.FRONTEND_ORIGIN || "http://localhost:5173",
-    credentials: true,
-  })
-);
+// ----- CORS -----
+app.use(cors({
+  origin: process.env.FRONTEND_ORIGIN,
+  credentials: true,
+}));
 
+// ----- Middlewares base -----
 app.use(express.json());
 app.use(morgan("dev"));
 
-// Rotas
+// ----- Rotas públicas -----
 app.use("/", publicRoutes);
-app.use("/test", (req, res) => { res.json({ message: "API is working!" }) });
+
+// Test route simples
+app.use("/test", (req, res) => {
+  res.json({ message: "API is working!" });
+});
+
+// ----- Rotas protegidas/API -----
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/materiais", materiaisRoutes);
 app.use("/api/planos", planosRoutes);
+
+// Health check
 app.get("/health", (_, res) => res.status(200).send("ok"));
 
-
-// Middleware global de erros (deve vir depois das rotas)
+// ----- Middleware global de erros -----
 app.use(errorHandler);
 
-// Iniciar servidor (usa PORT do env se disponível)
-const PORT = process.env.PORT || 3000;
+// ----- Iniciar servidor -----
+const PORT = process.env.PORT;
+
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
