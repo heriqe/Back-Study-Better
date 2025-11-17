@@ -12,12 +12,13 @@ const planosRoutes = require("./routes/planoRoutes");
 const errorHandler = require("./middlewares/errorHandler");
 const publicRoutes = require("./routes/publicRoutes");
 
+// CRITICAL FIX: criar a instância do Express antes de usar app.use
 const app = express();
 
 // configuração CORS: usa FRONTEND_ORIGIN se definido, senão permite localhost do Vite
 app.use(
   cors({
-    origin: process.env.FRONTEND_ORIGIN,
+    origin: process.env.FRONTEND_ORIGIN || "http://localhost:5173",
     credentials: true,
   })
 );
@@ -27,6 +28,7 @@ app.use(morgan("dev"));
 
 // Rotas
 app.use("/", publicRoutes);
+app.use("/test", (req, res) => { res.json({ message: "API is working!" }) });
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/materiais", materiaisRoutes);
@@ -37,7 +39,7 @@ app.get("/health", (_, res) => res.status(200).send("ok"));
 // Middleware global de erros (deve vir depois das rotas)
 app.use(errorHandler);
 
-// Iniciar servidor
+// Iniciar servidor (usa PORT do env se disponível)
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);

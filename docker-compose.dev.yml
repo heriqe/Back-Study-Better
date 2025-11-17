@@ -41,7 +41,7 @@ services:
       # Define o ambiente como desenvolvimento para Nodemon
       NODE_ENV: development
       # Porta da API
-      PORT: ${API_PORT:-8000}
+      PORT: 3000
       # Host do banco de dados (o nome do serviço 'db')
       DB_HOST: db
       # Usuário do banco de dados (deve ser o mesmo configurado no serviço 'db')
@@ -52,7 +52,7 @@ services:
       DB_NAME: ${MYSQL_DATABASE:-studybetter}
     ports:
       # Mapeamento da porta da API
-      - "8000:3000"
+      - "3000:3000"
       # Porta para debug (útil para VS Code)
       - "9229:9229"
     depends_on:
@@ -68,10 +68,12 @@ services:
     # Comando de desenvolvimento que deve usar Nodemon (geralmente configurado em package.json)
     command: npm run dev
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:${API_PORT:-8000}/health || exit 1"]
+      # corrigido: checar a rota /health na porta 3000
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/health || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
+    tty: true
 
 volumes:
   # Volume para persistência do banco de dados
