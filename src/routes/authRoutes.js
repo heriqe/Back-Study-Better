@@ -1,24 +1,24 @@
 const express = require("express");
 const router = express.Router();
 
-const authController = require("../controllers/authController"); // ajustado para ../controllers
-const { registerValidator, loginValidator } = require("../validators/authValidator"); // movido para ../validators
-const validationHandler = require("../validators/validationHandler"); // movido para ../validators
+const { login, register } = require('../controllers/authController');
+const { authSchema } = require('../validador/authValidator');
+const validationHandler = require('../validador/validationHandler');
 
 // Rota de registro
 router.post(
   "/register",
-  registerValidator,
+  authSchema.register,
   validationHandler,
-  authController.registrar
+  register
 );
 
 // Rota de login
 router.post(
   "/login",
-  loginValidator,
+  authSchema.login,
   validationHandler,
-  authController.login
+  login
 );
 
 module.exports = router;

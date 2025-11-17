@@ -1,52 +1,92 @@
-# StudyBetter
+# Back-Study-Better
 
-## Visão Geral
-O StudyBetter é uma aplicação web que permite aos usuários se registrarem, fazerem login e gerenciarem quizzes. Usuários podem criar quizzes, responder perguntas e gerenciar seus horários. Esta aplicação é construída utilizando Node.js e Express.
+API backend para suporte ao estudo — gerenciamento de matérias, planos e simulados.
 
-## Funcionalidades
-- Registro e login de usuários
-- Gerenciamento de quizzes (criar e listar quizzes)
-- Gerenciamento de perguntas (recuperar e validar perguntas)
-- Gerenciamento de conteúdos educacionais
-- Gerenciamento de horários do usuário
+## Descrição
+Projeto backend em Node.js com rotas para autenticação, gerenciamento de matérias, planos de estudo, simulados e rotas públicas. Ideal para aplicações focadas em organização de estudos e acompanhamento de desempenho.
 
-## Tecnologias Utilizadas
+## Funcionalidades principais
+- Registro e login de usuários (JWT)
+- CRUD de matérias
+- Gestão de planos de estudo
+- Simulados (criação e execução)
+- Rotas públicas para conteúdo não autenticado
+
+## Tecnologias
 - Node.js
 - Express
-- MySQL
-- bcrypt para hash de senhas
-- JSON Web Tokens (JWT) para autenticação
+- SQLite (iniciado via db/init.sql)
+- JWT para autenticação
+
+## Pré-requisitos
+- Node.js >= 14
+- npm
 
 ## Instalação
 1. Clone o repositório:
-   ```
-   git clone https://github.com/yourusername/Back-Study-Better.git
-   ```
-2. Navegue até o diretório do projeto:
-   ```
-   cd StudyBetter
-   ```
-3. Instale as dependências:
-   ```
+
+   git clone https://github.com/heriqe/Back-Study-Better.git
+   cd Back-Study-Better
+
+2. Instale dependências:
+
    npm install
-   ```
 
-## Endpoints da API
-- **Autenticação**
-  - `POST /register`: Registrar um novo usuário
-  - `POST /login`: Fazer login de um usuário existente
+3. Configure variáveis de ambiente (exemplo `.env`):
 
-- **Quizzes**
-  - `GET /quizzes`: Listar todos os quizzes
-  - `POST /quizzes`: Criar um novo quiz
+   PORT=3000
+   DATABASE_FILE=./src/db/database.sqlite
+   JWT_SECRET=sua_chave_secreta_aqui
 
-- **Perguntas**
-  - `GET /quizzes/:quizId/questions`: Listar perguntas de um quiz específico
-  - `POST /quizzes/:quizId/questions`: Adicionar uma nova pergunta a um quiz
+4. Inicialize o banco (se necessário):
 
-- **Conteúdos**
-  - `GET /contents`: Listar todos os conteúdos educacionais
+   - O arquivo `src/db/init.sql` contém o esquema inicial. Rode-o na sua instância SQLite para criar as tabelas.
 
-- **Horários**
-  - `POST /schedules`: Criar um novo horário
-  - `GET /schedules/:userId`: Listar horários de um usuário específico
+## Como executar
+- Em produção:
+
+  node src/app.js
+
+- Em desenvolvimento (com nodemon):
+
+  npm run dev
+
+## Estrutura principal do projeto
+
+src/
+ - app.js
+ - controllers/ (authController, materiasController, meController, planoController, publicController, simuladoController)
+ - db/ (index.js, init.sql)
+ - middlewares/ (middlewareAutenticacao.js, errorHandler.js)
+ - routes/ (authRoutes, materiasRoutes, meRoutes, planoRoutes, publicRoutes, simuladoRoutes, userRoutes)
+ - utils/ (jwt.js, response.js)
+ - validador/ (validators e handler)
+
+## Endpoints principais
+(Endpoints listados de forma resumida — ver rotas na pasta `src/routes` para detalhes)
+
+- POST /auth/register — registrar novo usuário
+- POST /auth/login — autenticar e receber token JWT
+- GET /me — informações do usuário (autenticado)
+- GET /materias — listar matérias
+- POST /materias — criar matéria (autenticado)
+- GET /plano — planos de estudo
+- POST /plano — criar plano de estudo (autenticado)
+- Rotas de simulado e públicas em `src/routes/simuladoRoutes.js` e `src/routes/publicRoutes.js`
+
+## Autenticação
+A API usa JWT. Inclua o header `Authorization: Bearer <token>` nas requisições que exigem autenticação.
+
+## Contribuindo
+- Abra uma issue para discutir mudanças grandes
+- Envie PRs pequenas e atômicas
+- Siga o padrão de código do projeto
+
+## Licença
+Projeto sem licença especificada — adicione um `LICENSE` se necessário.
+
+## Autor
+Henrique Ferreira
+
+## Status
+Em desenvolvimento
