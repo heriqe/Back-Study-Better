@@ -31,4 +31,8 @@ const verify = (token) => {
   }
 };
 
-module.exports = { sign, verify };
+// Backwards-compatible named exports used across the codebase
+const generateToken = (payload, options) => sign(payload, options);
+const verifyToken = (token) => verify(token);
+
+module.exports = { sign, verify, generateToken, verifyToken };
