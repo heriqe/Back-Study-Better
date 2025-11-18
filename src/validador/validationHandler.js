@@ -1,5 +1,5 @@
 const { validationResult } = require("express-validator");
-const response = require("./response");
+const response = require("../utils/response");
 
 /**
  * Middleware para enviar erros de validação no formato padronizado.
