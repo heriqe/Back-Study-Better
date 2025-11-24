@@ -136,6 +136,9 @@ const planoController = {
   // POST /api/planos
   create: async (req, res) => {
     try {
+      const usuarioId = req.usuario?.id;
+      if (!usuarioId) return sendError(res, "Não autenticado.", 401);
+
       const { title, description, duration, highlight, link, content } = req.body;
       let contentObj = null;
       if (content != null) {
@@ -143,19 +146,20 @@ const planoController = {
       }
       const [result] = await pool.query(
         `INSERT INTO planos 
-         (title, description, duration, highlight, link, content) 
-         VALUES (?, ?, ?, ?, ?, ?)`,
-        [title, description, duration, highlight || 0, link, contentObj]
+         (user_id, title, description, duration, highlight, link, content) 
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [usuarioId, title, description, duration, highlight || 0, link, contentObj]
       );
 
       const novoPlano = {
         id: result.insertId,
+        user_id: usuarioId,
         title,
         description,
         duration,
         highlight: !!highlight,
-  link,
-  content: contentObj,
+        link,
+        content: contentObj,
       };
 
       return sendSuccess(res, novoPlano, 201);
@@ -168,6 +172,8 @@ const planoController = {
   update: async (req, res) => {
     try {
       const { id } = req.params;
+      const usuarioId = req.usuario?.id;
+      if (!usuarioId) return sendError(res, "Não autenticado.", 401);
       const { title, description, duration, highlight, link, content } = req.body;
       let contentObj = null;
       if (content != null) {
@@ -177,12 +183,16 @@ const planoController = {
       const [result] = await pool.query(
         `UPDATE planos 
          SET title = ?, description = ?, duration = ?, highlight = ?, link = ?, content = ? 
-         WHERE id = ?`,
-        [title, description, duration, highlight, link, contentObj, id]
+         WHERE id = ? AND user_id = ?`,
+        [title, description, duration, highlight, link, contentObj, id, usuarioId]
       );
 
-      if (result.affectedRows === 0)
-        return sendError(res, "Plano não encontrado", 404);
+      if (result.affectedRows === 0) {
+        // check if plan exists at all
+        const [rows] = await pool.query("SELECT user_id FROM planos WHERE id = ?", [id]);
+        if (rows.length === 0) return sendError(res, "Plano não encontrado", 404);
+        return sendError(res, "Não autorizado a atualizar este plano", 403);
+      }
 
       return sendSuccess(res, { message: "Plano atualizado com sucesso" });
     } catch (err) {
@@ -194,13 +204,19 @@ const planoController = {
   remove: async (req, res) => {
     try {
       const { id } = req.params;
+      const usuarioId = req.usuario?.id;
+      if (!usuarioId) return sendError(res, "Não autenticado.", 401);
+
       const [result] = await pool.query(
-        "DELETE FROM planos WHERE id = ?",
-        [id]
+        "DELETE FROM planos WHERE id = ? AND user_id = ?",
+        [id, usuarioId]
       );
 
-      if (result.affectedRows === 0)
-        return sendError(res, "Plano não encontrado", 404);
+      if (result.affectedRows === 0) {
+        const [rows] = await pool.query("SELECT id FROM planos WHERE id = ?", [id]);
+        if (rows.length === 0) return sendError(res, "Plano não encontrado", 404);
+        return sendError(res, "Não autorizado a deletar este plano", 403);
+      }
 
       return sendSuccess(res, { message: "Plano removido com sucesso" });
     } catch (err) {
