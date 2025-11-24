@@ -10,6 +10,8 @@ module.exports = (err, req, res, next) => {
     console.error(`Erro [${status}]: ${message}`);
   }
 
+  console.error('DEBUG typeof response:', typeof response);
+
   return response(res, status, false, message, null, {
     error: process.env.NODE_ENV !== "production" ? err : undefined,
   });

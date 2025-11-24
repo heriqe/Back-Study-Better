@@ -18,6 +18,8 @@ exports.registrar = async (req, res, next) => {
   try {
     let { nome, email, senha, confirmaSenha } = req.body;
 
+  console.error('DEBUG in registrar typeof response:', typeof response);
+
     // campos obrigatórios
     if (!nome || !email || !senha || !confirmaSenha) {
       return response(res, 400, false, "Todos os campos são obrigatórios.");

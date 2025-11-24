@@ -21,4 +21,16 @@ exports.validatePlano = [
     .optional()
     .isBoolean()
     .withMessage("Highlight deve ser booleano"),
+  // content pode ser objeto JSON; aceitamos string válida ou objeto
+  body("content")
+    .optional()
+    .custom((val) => {
+      if (val == null) return true;
+      if (typeof val === 'object') return true;
+      if (typeof val === 'string') {
+        try { JSON.parse(val); return true; } catch (e) { return false; }
+      }
+      return false;
+    })
+  .withMessage('Content deve ser JSON válido ou objeto')
 ];
