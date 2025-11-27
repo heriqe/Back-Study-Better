@@ -3,7 +3,6 @@ require("dotenv").config();
 
 const express = require("express");
 const cors = require("cors");
-const morgan = require("morgan");
 
 // Rotas
 const publicRoutes = require("./routes/publicRoutes");
@@ -26,7 +25,6 @@ app.use(cors({
 
 // ----- Middlewares base -----
 app.use(express.json());
-app.use(morgan("dev"));
 
 // ----- Rotas públicas -----
 app.use("/", publicRoutes);
